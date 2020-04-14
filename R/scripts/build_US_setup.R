@@ -1,3 +1,37 @@
+##
+# @file
+# @brief Creates mobility and geodata
+#
+#
+# @details
+# 
+# ## Configuration Items
+# 
+# ```yaml
+#
+# spatial_setup:
+#   base_path: <path to directory>
+#   modeled_states: <list of strings>
+#   mobility: <path to file>
+#   geodata: <path to file>
+# ```
+#
+# ## Input Data
+#
+# The input data for this script comes packaged with COVIDScenarioPipeline.
+# [path] is the -p/--path script argument
+#
+# * [path]/data/united-states-commutes/commute_data.csv
+# * [path]/data/united-states-commutes/census_tracts_2010.csv
+#
+# ## Output Data
+#
+# * {spatial_setup::base_path}/{spatial_setup::mobility}
+# * {spatial_setup::base_path}/{spatial_setup::geodata}
+#
+
+## @cond
+
 library(dplyr)
 library(tidyr)
 
@@ -46,12 +80,14 @@ t_commute_table <- tibble(
 )
 
 rc <- padding_table %>% bind_rows(commute_data) %>% bind_rows(t_commute_table) %>%
-  pivot_wider(OFIPS,names_from=DFIPS,values_from=FLOW, values_fill=c("FLOW"=0),values_fn = list(FLOW=sum))
-
+  pivot_wider(OFIPS,names_from=DFIPS,values_from=FLO
 if(!isTRUE(all(rc$OFIPS == census_data$GEOID))){
   stop("There was a problem generating the mobility matrix")
 }
+W, values_fill=c("FLOW"=0),values_fn = list(FLOW=sum))
 
 print(outdir)
-write.table(file = file.path(outdir,'mobility.txt'), as.matrix(rc[,-1]), row.names=FALSE, col.names = FALSE, sep = " ")
-write.csv(file = file.path(outdir,'geodata.csv'), census_data)
+write.table(file = file.path(outdir, config$spatial_setup$mobility), as.matrix(rc[,-1]), row.names=FALSE, col.names = FALSE, sep = " ")
+write.csv(file = file.path(outdir, config$spatial_setup$geodata), census_data)
+
+## @endcond
