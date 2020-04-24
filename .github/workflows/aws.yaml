@@ -1,3 +1,5 @@
+name: Deploy to Amazon ECR
+
 # This workflow will build and push a new container image to Amazon ECR
 # The following information will need to be included in your Github secrets:
 # - AWS_ACCESS_KEY_ID: dedicated user AWS key ID
@@ -17,8 +19,6 @@ on:
       - 'local_install.R'
       - 'Dockerfile'
       - 'R/pkgs/**'
-
-name: Deploy to Amazon ECR
 
 jobs:
   deploy:
