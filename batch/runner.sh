@@ -29,31 +29,31 @@ mkdir model_data
 tar -xvzf model_data.tar.gz -C model_data
 cd model_data
 
-# check for presence of S3_LAST_JOB_OUTPUT and download the
-# output from the corresponding last job here
-DVC_OUTPUTS_ARRAY=($DVC_OUTPUTS)
-if [ -n "$S3_LAST_JOB_OUTPUT" ]; then
-	for output in "${DVC_OUTPUTS_ARRAY[@]}"
-	do
-		aws s3 cp --quiet --recursive $S3_LAST_JOB_OUTPUT:AWS_BATCH_JOB_ARRAY_INDEX/$output/ $output/
-		ls -ltr $output
-	done
-fi
-
-# Pick up stuff that changed
-# TODO(jwills): maybe move this to like a prep script?
-Rscript COVIDScenarioPipeline/local_install.R
+# Optional tracking variable to use to write unique output files
+export AWS_BATCH_SIM_OFFSET=$((${AWS_BATCH_JOB_ARRAY_INDEX:-0} * ${SLOTS_PER_JOB:-0}))
 
 # Initialize dvc and run the pipeline to re-create the
 # dvc target
 dvc init --no-scm
 dvc repro $DVC_TARGET
 
-for output in "${DVC_OUTPUTS_ARRAY[@]}"
-do
-	if [ -d "$output" ]; then
-		aws s3 cp --quiet --recursive $output $S3_RESULTS_PATH/$AWS_BATCH_JOB_ID/$output/
-	fi
-done
+DVC_OUTPUTS_ARRAY=($DVC_OUTPUTS)
+if [ -z "$AWS_BATCH_JOB_ARRAY_INDEX" ]; then
+	for output in "${DVC_OUTPUTS_ARRAY[@]}"
+	do
+		if [ -d "$output" ]; then
+			tar cv --use-compress-program=pbzip2 -f $output.tar.bz2 $output
+			aws s3 cp --quiet $output.tar.bz2 $S3_RESULTS_PATH/
+		fi
+	done
+else
+	echo "Saving outputs from array batch job"
+	for output in "${DVC_OUTPUTS_ARRAY[@]}"
+	do
+		if [ -d "$output" ]; then
+			aws s3 cp --quiet --recursive $output $S3_RESULTS_PATH/$AWS_BATCH_JOB_ID/$output/
+		fi
+	done
+fi
 
 echo "Done"
