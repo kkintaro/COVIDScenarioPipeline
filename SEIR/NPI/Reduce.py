@@ -7,6 +7,7 @@ REDUCE_PARAMS = ["alpha", "r0", "gamma", "sigma"]
 
 class Reduce(NPIBase):
     def __init__(self, *, npi_config, global_config, geoids, loaded_df = None):
+        print("Start Reduce")
         super().__init__(npi_config)
 
         self.start_date = global_config["start_date"].as_date()
@@ -66,6 +67,7 @@ class Reduce(NPIBase):
 
         if (self.npi > 1).all(axis=None):
             raise ValueError(f"The intervention in config: {npi_config.name} has reduction of {param_name} is greater than 1")
+        print("End Reduce")
 
     def getReduction(self, param):
         if param == self.reduced_param:
