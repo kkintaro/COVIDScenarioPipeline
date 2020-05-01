@@ -7,7 +7,6 @@ REDUCE_PARAMS = ["alpha", "r0", "gamma", "sigma"]
 
 class Stacked(NPIBase):
     def __init__(self, *, npi_config, global_config, geoids, loaded_df = None):
-        print("Start Stacked")
         super().__init__(npi_config)
 
         self.start_date = global_config["start_date"].as_date()
@@ -40,7 +39,6 @@ class Stacked(NPIBase):
         self.reductions = {}
         for param, reduction_list in reduction_lists.items():
             self.reductions[param] = 1 - functools.reduce(lambda a,b : a * (1-b) , reduction_list, 1)
-        print("End Stacked")
 
     def getReduction(self, param):
         return self.reductions[param]

@@ -8,7 +8,6 @@ from .base import NPIBase
 # Kept for backwards compatibility
 class ReduceR0(NPIBase):
     def __init__(self, *, npi_config, global_config, geoids, loaded_df = None):
-        print("Start ReduceR0")
         super().__init__(npi_config)
 
         self.start_date = global_config["start_date"].as_date()
@@ -59,7 +58,6 @@ class ReduceR0(NPIBase):
             print(f"Warning: The intervention in config: {npi_config.name} does nothing.")
 
         print("Warning: The ReduceR0 is redundant with the newer Reduce NPI template configured with parameter: r0")
-        print("End ReduceR0")
 
     def getReduction(self, param):
         if param == 'r0':
