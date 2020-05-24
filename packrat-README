@@ -4,10 +4,17 @@ To add or update a package on the dev Docker using packrat:
 
 docker run -it --rm -v "$(pwd)":/home/app/covidsp hopkinsidd/covidscenariopipeline:latest-dev
 
-2) Install the packages you want using R normally
+2) Install the packages you want using R normally, such as install.packages(...)
 
 3) Run packrat::snapshot(infer.dependencies=FALSE)
+3a) Go do something else for about an hour. This could take awhile.
 
-4) Delete the lib files
+4) Delete the lib and src files. Packrat does not delete old *.tar.gz's in the src folder. Try to remove the ones for packages you updated. If any. Cross-reference the hashes with the ones in packrat.lock
 
-5) Copy all files from the /home/app/packrat directory to the mounted /home/app/covidsp/packrat directory.
+cd ~/packrat
+rm -r lib*
+
+5) Run packrat::restore()
+5a) Go do something else for about an hour. This could take awhile.
+
+7) Copy all files from the /home/app/packrat directory to the mounted /home/app/covidsp/packrat directory.
