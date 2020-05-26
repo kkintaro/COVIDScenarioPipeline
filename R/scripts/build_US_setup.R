@@ -127,9 +127,8 @@ commute_data <- commute_data %>%
   mutate(OFIPS = name_changer[OFIPS], DFIPS = name_changer[DFIPS]) %>%
   filter(OFIPS %in% census_data$geoid, DFIPS %in% census_data$geoid) %>%
   group_by(OFIPS,DFIPS) %>%
-  summarize(FLOW = sum(FLOW))
-
-rc <- commute_data
+  summarize(FLOW = sum(FLOW)) %>%
+  filter(OFIPS != DFIPS)
 
 if(opt$w){
   mobility_file <- 'mobility.txt'
@@ -140,6 +139,14 @@ if(opt$w){
 }
 
 if(endsWith(mobility_file, '.txt')) {
+  # Pads 0's for every geoid and itself, so that nothing gets dropped on the pivot
+  padding_table <- tibble(
+    OFIPS = census_data$geoid,
+    DFIPS = census_data$geoid,
+    FLOW = 0
+  )
+
+  rc <- padding_table %>% bind_rows(commute_data)
   rc <- rc %>% arrange(match(OFIPS, census_data$geoid), match(DFIPS, census_data$geoid))
   rc <- rc %>% pivot_wider(OFIPS,names_from=DFIPS,values_from=FLOW, values_fill=c("FLOW"=0),values_fn = list(FLOW=sum))
   if(!isTRUE(all(rc$OFIPS == census_data$geoid))){
@@ -149,7 +156,7 @@ if(endsWith(mobility_file, '.txt')) {
   }
   write.table(file = file.path(outdir, mobility_file), as.matrix(rc[,-1]), row.names=FALSE, col.names = FALSE, sep = " ")
 } else if(endsWith(mobility_file, '.csv')) {
-  rc <- rc %>% filter(OFIPS != DFIPS)
+  rc <- commute_data
   names(rc) <- c("ori","dest","amount")
   rc <- rc[rc$ori != rc$dest,]
   write.csv(file = file.path(outdir, mobility_file), rc, row.names=FALSE)
